@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -40,6 +40,10 @@ app.get("/", (req, res) => {
 const run = async () => {
   try {
     const usersCollection = client.db("LaptopBazer").collection("users");
+    const categoriesCollection = client
+      .db("LaptopBazer")
+      .collection("categories");
+    const productsCollection = client.db("LaptopBazer").collection("products");
 
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
@@ -73,10 +77,38 @@ const run = async () => {
       res.send({ result: true });
     });
 
-    app.post("/users", async (req, res) => {
+    app.post("/users", verifyJWT, async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
       res.send(user);
+    });
+
+    app.get("/categories", async (req, res) => {
+      const query = {};
+      const result = await categoriesCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/products/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = {
+        user_email: email,
+      };
+      const result = await productsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/products", verifyJWT, async (req, res) => {
+      const product = req.body;
+      const result = await productsCollection.insertOne(product);
+      res.send(result);
+    });
+
+    app.delete("/products/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.deleteOne(query);
+      res.send(result);
     });
   } finally {
   }
