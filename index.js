@@ -65,6 +65,13 @@ const run = async () => {
       res.send(result);
     });
 
+    app.get("/users/findUserByType/:userType", verifyJWT, async (req, res) => {
+      const id = req.params.userType;
+      const query = { account_type: id };
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post("/userFindCreate", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
@@ -83,9 +90,24 @@ const run = async () => {
       res.send(user);
     });
 
+    app.delete("/users/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
+
     app.get("/categories", async (req, res) => {
       const query = {};
       const result = await categoriesCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/products/Advertise", async (req, res) => {
+      const query = {
+        isAdertise: true,
+      };
+      const result = await productsCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -101,6 +123,19 @@ const run = async () => {
     app.post("/products", verifyJWT, async (req, res) => {
       const product = req.body;
       const result = await productsCollection.insertOne(product);
+      res.send(result);
+    });
+
+    app.patch("/products/advertise/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = { $set: { isAdertise: true } };
+      const result = await productsCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       res.send(result);
     });
 
