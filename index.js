@@ -69,8 +69,8 @@ const run = async () => {
     });
 
     app.get("/users/findUserByType/:userType", verifyJWT, async (req, res) => {
-      const id = req.params.userType;
-      const query = { account_type: id };
+      const account_type = req.params.userType;
+      const query = { account_type: account_type };
       const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
@@ -86,7 +86,7 @@ const run = async () => {
       res.send({ result: true });
     });
 
-    app.post("/users", verifyJWT, async (req, res) => {
+    app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
       res.send(user);
@@ -126,6 +126,7 @@ const run = async () => {
     app.get("/products/Advertise", async (req, res) => {
       const query = {
         isAdertise: true,
+        isBooked: false,
       };
       const result = await productsCollection.find(query).toArray();
       res.send(result);
