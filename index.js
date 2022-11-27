@@ -190,18 +190,27 @@ const run = async () => {
       const product_id = bookingInfo.product_id;
 
       const filter_for_update_products = { _id: ObjectId(product_id) };
-      const options = { upsert: true };
-      const updateDoc = { $set: { isBooked: true } };
-      const update = await productsCollection.updateOne(
+      const options1 = { upsert: true };
+      const updateDoc1 = {
+        $set: { isBooked: true },
+      };
+      const update1 = await productsCollection.updateMany(
         filter_for_update_products,
-        updateDoc,
-        options
+        updateDoc1,
+        options1
       );
 
-      if (update) {
+      if (update1) {
         const result = await bookingsCollection.insertOne(bookingInfo);
         res.send(result);
       }
+    });
+
+    app.get("/find-buyers/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const query = { seller_email: email };
+      const result = await bookingsCollection.find(query).toArray();
+      res.send(result);
     });
 
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
@@ -224,16 +233,31 @@ const run = async () => {
       const payment = paymentInfo.payment;
       const result = await paymentsCollection.insertOne(payment);
       if (result) {
-        const filter = { _id: ObjectId(paymentInfo.booking_id) };
+        const filter1 = { _id: ObjectId(paymentInfo.booking_id) };
         const options = { upsert: true };
-        const updateDoc = {
+        const updateDoc1 = {
           $set: {
             isPaid: true,
           },
         };
-        const update = await bookingsCollection.updateOne(
-          filter,
-          updateDoc,
+        const update1 = await bookingsCollection.updateOne(
+          filter1,
+          updateDoc1,
+          options
+        );
+
+        const booking = await bookingsCollection.findOne(filter1);
+
+        const filter2 = { _id: ObjectId(booking.product_id) };
+        console.log(filter2);
+        const updateDoc2 = {
+          $set: {
+            isSold: true,
+          },
+        };
+        const update2 = await productsCollection.updateOne(
+          filter2,
+          updateDoc2,
           options
         );
       }
