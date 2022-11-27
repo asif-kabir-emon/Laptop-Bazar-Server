@@ -53,9 +53,7 @@ const run = async () => {
       const query = { email: email };
       const result = await usersCollection.findOne(query);
       if (result) {
-        const token = jwt.sign(query, process.env.ACCESS_TOKEN, {
-          expiresIn: "1d",
-        });
+        const token = jwt.sign(query, process.env.ACCESS_TOKEN);
         return res.send({ accessToken: token });
       }
       res.status(401).send({ accessToken: "" });
