@@ -47,6 +47,7 @@ const run = async () => {
     const productsCollection = client.db("LaptopBazer").collection("products");
     const bookingsCollection = client.db("LaptopBazer").collection("bookings");
     const paymentsCollection = client.db("LaptopBazer").collection("payments");
+    const reportsCollection = client.db("LaptopBazer").collection("reports");
 
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
@@ -175,6 +176,13 @@ const run = async () => {
       res.send(result);
     });
 
+    app.get("/products/useID/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.findOne(query);
+      res.send(result);
+    });
+
     app.delete("/products/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -277,6 +285,26 @@ const run = async () => {
         );
       }
       res.send(result);
+    });
+
+    app.get("/reports", async (req, res) => {
+      const query = {};
+      const result = await reportsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/reports", verifyJWT, async (req, res) => {
+      const report = req.body;
+      console.log(report);
+      const filter = {
+        product_id: report.product_id,
+      };
+      const reported = await reportsCollection.find(filter).toArray();
+      if (reported.length === 0) {
+        const result = await reportsCollection.insertOne(report);
+        return res.send(result);
+      }
+      res.send({ result: "Already Reported" });
     });
   } finally {
   }
